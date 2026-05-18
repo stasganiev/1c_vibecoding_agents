@@ -1,7 +1,7 @@
 ---
-description: Роль 1С-аналитика: PRD, архитектурное решение, todo-план разработки
-argument-hint: <НомерЗадачи>
-allowed-tools: Read, Grep, Glob, Write
+description: Роль 1С-разработчика: поэтапная разработка по todo-плану
+argument-hint: <НомерЗадачи> <НомерЭтапа>
+allowed-tools: Read, Grep, Glob, Write, Edit
 model: claude-opus-4-7
 ---
 
