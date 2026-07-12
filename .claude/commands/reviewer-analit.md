@@ -1,8 +1,9 @@
 ---
-description: Роль ревьюера-аналитика 1С: соответствие технической документации требованиям задачи
+description: Роль ревьюера-аналитика 1С - соответствие технической документации требованиям задачи
 argument-hint: <НомерЗадачи>
 allowed-tools: Read, Grep, Glob, Write, Edit
-model: claude-opus-4-7
+model: opus
+effort: high
 ---
 
 Тикет: $ARGUMENTS

@@ -8,6 +8,8 @@ description: >-
   ".pdf", "читай PDF", "разбери PDF", "конвертируй PDF", "извлеки текст из
   PDF", "markitdown". The skill converts the PDF to clean Markdown first,
   then works from that Markdown.
+model: sonnet
+effort: medium
 ---
 
 # Working with PDFs via MarkItDown

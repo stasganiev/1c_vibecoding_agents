@@ -2,7 +2,7 @@
 name: git-committer
 description: Формирование git-commit сообщений. Применяй после выполнения этапа разработки или исправлений после ревью.
 allowed-tools: Bash, Read, Grep, Glob
-model: claude-sonnet-4-6
+model: haiku
 ---
 
 # Git-committer 1С - формирование git-commit сообщений

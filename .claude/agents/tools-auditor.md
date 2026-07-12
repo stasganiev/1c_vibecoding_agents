@@ -2,7 +2,7 @@
 name: tools-auditor
 description: Проверяет, что инструменты, используемые агентом, навыком или командой, соответствуют разрешениям. Запускай перед использованием agent, skill или command.
 tools: Read, Grep, Glob
-model: sonnet
+model: haiku
 ---
 
 # tools-auditor - проверяет, что агент, навык или команда не использует запрещенные инструменты.

@@ -1,8 +1,9 @@
 ---
-description: Роль 1С-разработчика: поэтапная разработка по todo-плану
+description: Роль 1С-разработчика - поэтапная разработка по todo-плану
 argument-hint: <НомерЗадачи> <НомерЭтапа>
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash(git diff:*)
-model: claude-sonnet-4-6
+model: sonnet
+effort: high
 ---
 
 Тикет: $1

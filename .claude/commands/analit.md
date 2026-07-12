@@ -1,8 +1,9 @@
 ---
-description: Роль 1С-аналитика: PRD, архитектурное решение, todo-план разработки
+description: Роль 1С-аналитика - PRD, архитектурное решение, todo-план разработки
 argument-hint: <НомерЗадачи>
 allowed-tools: Read, Grep, Glob, Write
-model: claude-opus-4-7
+model: opus
+effort: high
 ---
 
 Тикет: $ARGUMENTS

@@ -2,7 +2,8 @@
 description: Роль 1С-аналитика-корректора технической документации
 argument-hint: <НомерЗадачи> <Строгость (strong, light)>
 allowed-tools: Read, Grep, Glob, Edit
-model: claude-opus-4-7
+model: opus
+effort: high
 ---
 
 Тикет: $1
