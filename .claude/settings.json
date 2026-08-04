@@ -1,0 +1,73 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(mkdir -p \"c:/AI_dev/1c_vibecoding_agents/.claude/hooks\")",
+      "Bash(rm -f .claude/use_tools.log)",
+      "Bash(rm -rf .claude/.tool_use_state)",
+      "Bash(node .claude/hooks/log_tool_use.js)",
+      "Bash(echo \"exit code: $?\")",
+      "Bash(echo \"empty stdin exit: $?\")",
+      "Bash(echo \"invalid json exit: $?\")",
+      "Bash(echo \"unrelated tool exit: $?\")"
+    ],
+    "additionalDirectories": [
+      "c:\\AI_dev\\1c_vibecoding_agents\\.claude"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/log_tool_use.js"
+            ]
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/log_tool_use.js"
+            ]
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/log_tool_use.js"
+            ]
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/log_tool_use.js"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
