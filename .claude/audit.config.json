@@ -1,0 +1,23 @@
+{
+  "_comment": "Структура ЭТОГО репозитория для скиллов ai-tools-audit, nachalo-sessii и zavershenie-sessii. Здесь нет пары projects/+results/: задачи лежат в projects/tasks/FT-xxx/, у каждой своя memory.md.",
+
+  "memory_file": "memory.md",
+
+  "_pairs": "Пары папок нет — задачи и их результаты живут в одной папке FT-xxx. Проверка парности отключена (пустой список).",
+  "pairs": [],
+
+  "_project_root": "Где искать задачи и их память. Читают скиллы начала и завершения сессии.",
+  "project_root": "projects/tasks",
+  "project_memory": "memory.md",
+  "project_instruction": "CLAUDE.local.md",
+
+  "link_roots": ["projects"],
+
+  "_env_facts": "Инструменты, заявленные в инструкциях. Добавляешь вызов нового — впиши сюда с указанием, ГДЕ заявлено.",
+  "env_facts": [
+    {"name": "node", "probe": "cmd:node", "expect": true,
+     "where": ".claude/hooks/log_tool_use.js — хук логирования"},
+    {"name": "git", "probe": "cmd:git", "expect": true,
+     "where": ".claude/skills/git-committer — коммиты"}
+  ]
+}
