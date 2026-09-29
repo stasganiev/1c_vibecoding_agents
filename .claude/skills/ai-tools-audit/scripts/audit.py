@@ -23,6 +23,7 @@
 Код возврата: 0 — чисто, 1 — есть замечания. Никогда не бросает исключение
 наружу: сломанный аудит не должен блокировать работу.
 """
+import glob
 import io
 import json
 import os
@@ -367,6 +368,8 @@ def check_hooks(hooks):
                 problem("хуки", "%s: событие %s ссылается на %s — файла нет"
                         % (src, event, token))
 
+    check_global_hooks()
+
     # Синтаксис: только для своих хуков и только там, где есть чем проверить.
     checkers = {
         ".js": ["node", "--check"],
@@ -386,6 +389,73 @@ def check_hooks(hooks):
                         % (rel(path), err.splitlines()[0] if err else "?"))
         except (OSError, subprocess.SubprocessError):
             pass  # нет интерпретатора — не наша проблема, ловится в env
+
+
+HOME_CLAUDE = os.path.join(os.path.expanduser("~"), ".claude")
+
+
+def installed_tool_names():
+    """Имена скиллов, агентов и команд во всех местах, откуда их грузит Claude Code."""
+    names = set()
+    bases = [CLAUDE_DIR, HOME_CLAUDE]
+    for base in bases:
+        for sub, pattern in (("skills", "*"), ("agents", "*.md"), ("commands", "*.md"),
+                             ("commands", "*")):
+            for p in glob.glob(os.path.join(base, sub, pattern)):
+                names.add(os.path.splitext(os.path.basename(p))[0])
+    for p in glob.glob(os.path.join(HOME_CLAUDE, "skills", "synced", "*", "*")):
+        names.add(os.path.basename(p))
+    for p in glob.glob(os.path.join(HOME_CLAUDE, "plugins", "*", "*", "*", "skills", "*")):
+        names.add(os.path.basename(p))
+    return names
+
+
+def check_global_hooks(settings_path=None):
+    """Хуки из ~/.claude/settings.json: они срабатывают во ВСЕХ проектах.
+
+    Две поломки. Хук ссылается на удалённый файл. И хуки фреймворка пережили
+    сам фреймворк: скрипты с общим префиксом (gsd-*.js) подключены, а ни одного
+    скилла, агента или команды с этим префиксом больше нет — инструмент удалён,
+    а его хуки продолжают запускаться на каждое действие.
+    """
+    path = settings_path or os.path.join(HOME_CLAUDE, "settings.json")
+    try:
+        data = json.loads(read(path))
+    except ValueError:
+        return
+    src = path.replace(os.path.expanduser("~"), "~").replace("\\", "/")
+    cmds = []
+    for event, groups in (data.get("hooks") or {}).items():
+        for group in groups or []:
+            for h in group.get("hooks", []) or []:
+                cmds.append((event, h.get("command", "")))
+    if isinstance(data.get("statusLine"), dict):
+        cmds.append(("statusLine", data["statusLine"].get("command", "")))
+
+    scripts = {}
+    for event, cmd in cmds:
+        for token in re.findall(r'["\']?([^"\'\s]+\.(?:ps1|js|sh|py|mjs|cjs))["\']?', cmd):
+            full = os.path.expanduser(token)
+            if not os.path.exists(full):
+                problem("хуки", "%s: событие %s ссылается на %s — файла нет"
+                        % (src, event, token))
+            scripts.setdefault(os.path.basename(token), set()).add(event)
+
+    families = {}
+    for name in scripts:
+        prefix = name.split("-")[0]
+        if prefix != name and len(prefix) >= 2:
+            families.setdefault(prefix, []).append(name)
+    tools = installed_tool_names()
+    for prefix, names in sorted(families.items()):
+        if len(names) < 3:
+            continue  # одиночный хук — не фреймворк
+        if any(t.startswith(prefix + "-") or t == prefix for t in tools):
+            continue
+        problem("хуки", "%s: %d хуков семейства %s-* подключены, но ни одного "
+                "скилла, агента или команды %s-* нет — инструмент удалён, "
+                "хуки работают во всех проектах вхолостую: %s"
+                % (src, len(names), prefix, prefix, ", ".join(sorted(names))))
 
 
 # --- 4. ссылки на файлы -----------------------------------------------------
