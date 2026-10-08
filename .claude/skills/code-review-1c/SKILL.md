@@ -1,7 +1,7 @@
 ---
 name: code-review-1c
 description: Ревью результатов разработки на соответствие стандартам 1С, БСП и архитектурным паттернам. Применяй, когда разработка завершена и нужно проверить её перед сдачей в тестирование.
-allowed-tools: Read, Grep, Glob, Write, Agent, TodoWrite, Bash
+allowed-tools: Read, Grep, Glob, Write, Agent, TodoWrite, Bash(git branch:*)
 model: sonnet
 effort: high
 ---

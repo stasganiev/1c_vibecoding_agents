@@ -12,6 +12,7 @@
   1. Инвентарь .claude/ — сколько скиллов, агентов, команд, хуков.
   2. Фронтматтер скиллов и агентов — обязательные поля, дубли имён.
   3. Хуки — файл на месте, синтаксис интерпретатора, нет ли осиротевших.
+     MCP — пути в .mcp.json абсолютные и существуют, команда есть в PATH.
   4. Ссылки в .md — существуют ли файлы, на которые ссылаются инструменты.
   5. Окружение — заявленные в скиллах инструменты реально доступны.
   6. Структурные соглашения — только если описаны в конфиге.
@@ -456,6 +457,59 @@ def check_global_hooks(settings_path=None):
                 "скилла, агента или команды %s-* нет — инструмент удалён, "
                 "хуки работают во всех проектах вхолостую: %s"
                 % (src, len(names), prefix, prefix, ", ".join(sorted(names))))
+
+
+SCRIPT_EXT = (".py", ".js", ".mjs", ".cjs", ".ts", ".ps1", ".sh", ".bat", ".cmd", ".exe")
+
+
+def _looks_like_path(arg):
+    """Аргумент — путь к файлу, а не флаг, URL или имя пакета (@scope/pkg)."""
+    if not arg or arg.startswith("-") or "://" in arg:
+        return False
+    if os.path.isabs(arg) or "\\" in arg or arg.startswith((".", "~")):
+        return True
+    return arg.lower().endswith(SCRIPT_EXT)
+
+
+def check_mcp(path=None):
+    """Пути в .mcp.json: stdio-сервер стартует из папки сессии.
+
+    Поле cwd Claude Code не применяет, поэтому относительный путь к скрипту
+    ищется от корня репозитория, сервер падает на старте, а в /mcp видно лишь
+    CONNECTION_CLOSED без причины. Значения env не читаются и не печатаются.
+    """
+    import shutil
+    path = path or os.path.join(ROOT, ".mcp.json")
+    if not os.path.isfile(path):
+        return
+    try:
+        servers = json.loads(read(path)).get("mcpServers") or {}
+    except ValueError as e:
+        problem("mcp", "%s не читается как JSON: %s" % (rel(path), e))
+        return
+    for name, cfg in sorted(servers.items()):
+        if not isinstance(cfg, dict) or not cfg.get("command"):
+            continue  # http/sse-сервер: путей нет
+        where = "%s: сервер %s" % (rel(path), name)
+        cwd_note = " (поле cwd Claude Code не применяет)" if cfg.get("cwd") else ""
+        cmd = os.path.expandvars(os.path.expanduser(str(cfg["command"])))
+        if _looks_like_path(cmd):
+            if not os.path.isabs(cmd):
+                problem("mcp", "%s: command %s относительный — ищется от папки "
+                        "сессии, пиши абсолютный путь%s" % (where, cmd, cwd_note))
+            elif not os.path.exists(cmd):
+                problem("mcp", "%s: command %s — файла нет" % (where, cmd))
+        elif shutil.which(cmd) is None:
+            problem("mcp", "%s: команды %s нет в PATH" % (where, cmd))
+        for arg in cfg.get("args") or []:
+            arg = os.path.expandvars(os.path.expanduser(str(arg)))
+            if "${" in arg or not _looks_like_path(arg):
+                continue
+            if not os.path.isabs(arg):
+                problem("mcp", "%s: аргумент %s относительный — ищется от папки "
+                        "сессии, пиши абсолютный путь%s" % (where, arg, cwd_note))
+            elif not os.path.exists(arg):
+                problem("mcp", "%s: аргумент %s — файла нет" % (where, arg))
 
 
 # --- 4. ссылки на файлы -----------------------------------------------------
@@ -909,6 +963,7 @@ def main():
     check_frontmatter(agents, "агенты")
     check_frontmatter(commands, "команды", required=("description",))
     check_hooks(hooks)
+    check_mcp()
 
     roots = CONFIG.get("link_roots") or top_level_dirs()
     check_links(roots)
