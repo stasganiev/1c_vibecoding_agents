@@ -8,17 +8,14 @@
 
 ```mermaid
 flowchart TD
-    REQ["requirements.md<br>постановка заказчика"] --> AN["/analit<br>аналитик"]
-    AN --> DOCS["architecture.md<br>todo_plan.md"]
-    DOCS --> RA["/reviewer-analit<br>ревью документации"]
-    RA -- "есть замечания" --> AC["/analit-corrector<br>правка по замечаниям"]
-    AC --> DOCS
-    RA -- "документы готовы" --> DEV["/developer<br>разработка этапа"]
-    DEV --> CR["/code-review-1c<br>три ревьюера параллельно"]
-    CR -- "нужна доработка" --> DEV
-    CR -- "этап принят" --> NEXT{"остались этапы?"}
-    NEXT -- "да" --> DEV
-    NEXT -- "нет" --> AUDIT["/code-auditor-full<br>шесть ревьюеров параллельно"]
+    REQ["requirements.md"] --> AN["/analit"]
+    AN -- "architecture.md и todo_plan.md" --> RA["/reviewer-analit"]
+    RA -- "есть замечания" --> AC["/analit-corrector"]
+    AC -- "документы исправлены" --> RA
+    RA -- "документы готовы" --> DEV["/developer"]
+    DEV -- "этап сделан" --> CR["/code-review-1c"]
+    CR -- "доработка или следующий этап" --> DEV
+    CR -- "все этапы приняты" --> AUDIT["/code-auditor-full"]
 ```
 
 Каждый шаг запускаете вы. Агенты не передают работу друг другу сами: результат шага лежит в файле, вы его читаете и решаете, идти дальше или вернуть на доработку.
